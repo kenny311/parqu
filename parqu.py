@@ -4,6 +4,7 @@ import pyarrow.parquet as pq
 import argparse
 import json
 import logging as logger
+import fnmatch
 # from logzero import logger
 # from multiprocessing import Pool
 
@@ -73,7 +74,7 @@ class Parqu():
 
 
     @staticmethod
-    def get_filelist(input_path: str, pattern=".parquet", recurse=False):
+    def get_filelist(input_path: str, pattern="*.parquet", recurse=False):
         """Returns a FileSystem object and a list of FileInfo objects that matches the pattern"""
         fs, path = FS.FileSystem.from_uri(input_path)
 
@@ -86,8 +87,8 @@ class Parqu():
             logger.debug(f"Got a single file - {fileinfo[0].path}")
             pass
         elif fileinfo[0].type == FS.FileType.Directory:
-            fileinfo = fs.get_file_info(FS.FileSelector(path, recursive=recurse))
-            fileinfo = [f for f in fileinfo if pattern in f.path]
+            fileinfo = fs.get_file_info(FS.FileSelector(path, recursive=recurse))        
+            fileinfo = [f for f in fileinfo if fnmatch.fnmatch(f.base_name, pattern)]
 
         logger.debug(
             f"Finished collecting {len(fileinfo)} objects from {fs.type_name} file system")
@@ -117,7 +118,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--path",  help="directory or file name", required=True)
     parser.add_argument(
-        "--pat",  help="extension or pattern of the filename (no regex match); applicable only if --path is a directory", default=".parquet", required=False)
+        "--pat",  help="unix style glob for filenmaes; applicable only if --path is a directory.  Default is '*.parquet'", default="*.parquet", required=False)
     parser.add_argument(
         "--recurse",  help="recursivly list into the directory to find files", action="store_true", default=False, required=False)
     parser.add_argument(

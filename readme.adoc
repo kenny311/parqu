@@ -11,7 +11,7 @@ Tool to extract parquet metadata.  Works on S3,local,HDFS, etc.
 
 [source,text]
 ----
-usage: parqu.py [-h] --path PATH [--pat PAT] [--recurse] [--details] [--check] [--pool POOL] [--log {DEBUG,INFO,WARNING,ERROR,CRITICAL}]
+usage: parqu.py [-h] --path PATH [--pat PAT] [--recurse] [--pool POOL] [--details {0,1,2}] [--log {DEBUG,INFO,WARNING,ERROR,CRITICAL}]
 
 Extract metadata from parquet files
 
@@ -20,9 +20,8 @@ optional arguments:
   --path PATH           directory or file name
   --pat PAT             unix style glob for filenames; applicable only if --path is a directory. Default to '*.parquet'
   --recurse             recursivly list the directory path to find files
-  --details             detail info about the parquet file
-  --check               check that files are ok by reading the metadata
   --pool POOL           number of concurrent workers for the run; defaults to number of 2 x CPUs - 1
+  --details {0,1,2}     0:file check; 1:basic schema dump [default], 2:exhaustive dump
   --log {DEBUG,INFO,WARNING,ERROR,CRITICAL}
                         log level; defaults to INFO
 ----

@@ -11,24 +11,18 @@ Tool to extract parquet metadata.  Works on S3,local,HDFS, etc.
 
 [source,text]
 ----
-usage: parqu.py [-h] --path PATH [--pat PAT] [--recurse] [--details] [--log LOG]
+usage: parqu.py [-h] --path PATH [--pat PAT] [--recurse] [--details] [--check] [--pool POOL] [--log {DEBUG,INFO,WARNING,ERROR,CRITICAL}]
 
 Extract metadata from parquet files
 
 optional arguments:
-  -h, --help   show this help message and exit
-  --path PATH  directory or file name - local, s3 or hdfs
-  --pat PAT    unix style glob for filenmaes; applicable only if --path is a directory. Default is '*.parquet'
-  --recurse    recursivly list into the directory to find files
-  --details    detail info about the parquet file
-  --log LOG    debug information
-
-Sample Invocations:
-
-./parqu.py --path /var/tmp/my_file.parquet 
-./parqu.py --path /var/tmp/some_dir/ 
-./parqu.py --path s3://my_bucket/some/directory/path/ 
-./parqu.py --path s3://my_bucket/some/directory/path/ --pat '2021*.parquet' 
-./parqu.py --path s3://my_bucket/some/directory/path/this_one_file.parquet
-./parqu.py --path s3://my_bucket/some/directory/path/ --details --recurse --log DEBUG
+  -h, --help            show this help message and exit
+  --path PATH           directory or file name
+  --pat PAT             unix style glob for filenames; applicable only if --path is a directory. Default to '*.parquet'
+  --recurse             recursivly list the directory path to find files
+  --details             detail info about the parquet file
+  --check               check that files are ok by reading the metadata
+  --pool POOL           number of concurrent workers for the run; defaults to number of 2 x CPUs - 1
+  --log {DEBUG,INFO,WARNING,ERROR,CRITICAL}
+                        log level; defaults to INFO
 ----

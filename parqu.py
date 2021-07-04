@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
+import multiprocessing
 from pyarrow import fs as FS
 import pyarrow.parquet as pq
 import argparse
 import json
 import logging as logger
+# from logzero import logger
 import fnmatch
+from multiprocessing import Pool
 
 # https://parquet.apache.org/documentation/latest/
 
@@ -59,12 +62,19 @@ class Parqu():
                 result['status'] = "OK"
             except Exception as e:
                 logger.error(f"Problem with {path}")
-                logger.exception(e)
+                # logger.exception(e)
         return result
 
     @property
     def meta_data(self) -> dict:
         return Parqu._get_metadata(self.FS, self.path, self.details)
+    
+    @property
+    def file_status(self) -> str:
+        field_names=['file_name', 'status', 'file_size']
+        meta = Parqu._get_metadata(self.FS, self.path, details=False)
+        values = [ str(meta[f]) for f in field_names]
+        return str.join('|', values)
 
     @staticmethod
     def get_filelist(input_path: str, pattern="*.parquet", recurse=False):
@@ -90,15 +100,29 @@ class Parqu():
         return fs, fileinfo
 
 
+def pool_get_meta(FS, path, details):
+    f = Parqu(FS, path=path, details=details)
+    return f.meta_data
+
+def pool_check_files(FS, path, details):
+    f = Parqu(FS, path=path, details=False)
+    return f.file_status
+
 def main(args):
     FS, objs = Parqu.get_filelist(
         args.path, pattern=args.pat, recurse=args.recurse)
 
-    for o in objs:
-        f = Parqu(FS, path=o.path, details=args.details)
-        info = f.meta_data
-        print(json.dumps(info, indent=4, sort_keys=True))
+    workers = args.pool if args.pool >=  1 else (multiprocessing.cpu_count() * 2 -1)
+    logger.info(f"Number of workers: {args.pool}")
+    logger.info(f"Number of workers: {workers}")
+    params = zip([FS] * len(objs), [o.path for o in objs], [args.details]*len(objs) )
 
+
+    pool_func = pool_check_files if args.check else pool_get_meta
+    with Pool(workers) as p:
+        results = p.starmap(pool_func, params)        
+        for r in results:
+            print(r) if isinstance(r, str) else print(json.dumps(r, indent=4, sort_keys=True))        
 
 if __name__ == "__main__":
 
@@ -120,7 +144,11 @@ if __name__ == "__main__":
     parser.add_argument(
         "--details",  help="detail info about the parquet file", action="store_true", required=False, default=False)
     parser.add_argument(
-        "--log",  help="debug information", required=False, default="INFO")
+        "--check",  help="check that files are ok by reading the metadata", action="store_true", required=False, default=False)
+    parser.add_argument(
+        "--pool", help="number of concurrent workers for the run; defaults to number of 2 x CPUs - 1", type=int, default=-1, required=False)
+    parser.add_argument(
+        "--log",  help="log level; defaults to INFO", choices=["DEBUG", "INFO","WARNING","ERROR","CRITICAL"], required=False, default="INFO")
 
     args = parser.parse_args()
     loglevel = getattr(logger, args.log.upper())

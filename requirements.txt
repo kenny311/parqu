@@ -1,0 +1,6 @@
+boto3
+botocore
+logzero
+pyarrow>=3.0.0
+numpy >= 1.16.6
+six >= 1.5

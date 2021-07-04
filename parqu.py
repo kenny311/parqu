@@ -5,14 +5,8 @@ import argparse
 import json
 import logging as logger
 import fnmatch
-# from logzero import logger
-# from multiprocessing import Pool
 
 # https://parquet.apache.org/documentation/latest/
-
-# !todo: possible bug there seems f.size issue...
-# if that is not returned properly, its not going to get the
-# parquet footer / metadata
 
 
 class Parqu():
@@ -53,7 +47,7 @@ class Parqu():
 
     @staticmethod
     def _get_metadata(FS: pq.FileSystem, path: str, details: bool) -> dict:
-        """returns (path, status, schema and meta data)"""
+        """returns the dict of result"""
         result = {'status': 'Error', 'file_name': path,
                   'file_size': 0, 'meta_data': None}
         with FS.open_input_file(path) as f:
@@ -72,7 +66,6 @@ class Parqu():
     def meta_data(self) -> dict:
         return Parqu._get_metadata(self.FS, self.path, self.details)
 
-
     @staticmethod
     def get_filelist(input_path: str, pattern="*.parquet", recurse=False):
         """Returns a FileSystem object and a list of FileInfo objects that matches the pattern"""
@@ -84,11 +77,13 @@ class Parqu():
             raise(FileNotFoundError)
 
         if fileinfo[0].type == FS.FileType.File:
-            logger.debug(f"Got a single file - {fileinfo[0].path}")
+            logger.debug(f"Checking a single file: {fileinfo[0].path}")
             pass
         elif fileinfo[0].type == FS.FileType.Directory:
-            fileinfo = fs.get_file_info(FS.FileSelector(path, recursive=recurse))        
-            fileinfo = [f for f in fileinfo if fnmatch.fnmatch(f.base_name, pattern)]
+            fileinfo = fs.get_file_info(
+                FS.FileSelector(path, recursive=recurse))
+            fileinfo = [f for f in fileinfo if fnmatch.fnmatch(
+                f.base_name, pattern)]
 
         logger.debug(
             f"Finished collecting {len(fileinfo)} objects from {fs.type_name} file system")
@@ -96,7 +91,8 @@ class Parqu():
 
 
 def main(args):
-    FS, objs = Parqu.get_filelist(args.path, pattern=args.pat, recurse=args.recurse)
+    FS, objs = Parqu.get_filelist(
+        args.path, pattern=args.pat, recurse=args.recurse)
 
     for o in objs:
         f = Parqu(FS, path=o.path, details=args.details)
@@ -118,9 +114,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--path",  help="directory or file name", required=True)
     parser.add_argument(
-        "--pat",  help="unix style glob for filenmaes; applicable only if --path is a directory.  Default is '*.parquet'", default="*.parquet", required=False)
+        "--pat",  help="unix style glob for filenames; applicable only if --path is a directory.  Default to '*.parquet'", default="*.parquet", required=False)
     parser.add_argument(
-        "--recurse",  help="recursivly list into the directory to find files", action="store_true", default=False, required=False)
+        "--recurse",  help="recursivly list the directory path to find files", action="store_true", default=False, required=False)
     parser.add_argument(
         "--details",  help="detail info about the parquet file", action="store_true", required=False, default=False)
     parser.add_argument(

@@ -1,36 +1,34 @@
-= parqu: parquet metadata extraction 
+= parqu: parquet metadata extractor 
 :author: kenny yeung 
 :email: kenny.yeung@gmail.com
-:revnumber: v0.1
-:revdate: 2021-01-03
+:revnumber: v1.0
+:revdate: 2021-07-03
 :revremark: initial version
 
 
 Tool to extract parquet metadata.  Works on S3,local,HDFS, etc. 
 
 
-[source,bash]
+[source,text]
 ----
-usage: parqu.py [-h] --path PATH [--simple] [--recurse] [--pat PAT] [--check] [--npool NPOOL] [--details]
+usage: parqu.py [-h] --path PATH [--pat PAT] [--recurse] [--details] [--log LOG]
 
 Extract metadata from parquet files
 
 optional arguments:
-  -h, --help     show this help message and exit
-  --path PATH    directory or file name
-  --simple       simplifed output; one line per parquet file
-  --recurse      simplifed output; one line per parquet file
-  --pat PAT      extension or pattern of the filename (no regex match)
-  --check        check that the file is ok by reading the metadata
-  --npool NPOOL  number of workers to start for this run
-  --details      lots of details for the parquet file
+  -h, --help   show this help message and exit
+  --path PATH  directory or file name - local, s3 or hdfs
+  --pat PAT    unix style glob for filenmaes; applicable only if --path is a directory. Default is '*.parquet'
+  --recurse    recursivly list into the directory to find files
+  --details    detail info about the parquet file
+  --log LOG    debug information
 
-----
+Sample Invocations:
 
-
-The python source code
-
-[source,python]
-----
-include::parqu.py[lines=4..15]
+./parqu.py --path /var/tmp/my_file.parquet 
+./parqu.py --path /var/tmp/some_dir/ 
+./parqu.py --path s3://my_bucket/some/directory/path/ 
+./parqu.py --path s3://my_bucket/some/directory/path/ --pat '2021*.parquet' 
+./parqu.py --path s3://my_bucket/some/directory/path/this_one_file.parquet
+./parqu.py --path s3://my_bucket/some/directory/path/ --details --recurse --log DEBUG
 ----

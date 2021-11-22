@@ -2,8 +2,8 @@
 :author: kenny yeung 
 :email: kenny.yeung@gmail.com
 :revnumber: v1.0
-:revdate: 2021-07-03
-:revremark: initial version
+:revdate: 2021-11-16
+:revremark: clean-up, change option parsing
 
 
 Tool to extract parquet metadata.  Works on S3,local,HDFS, etc. 
@@ -11,17 +11,19 @@ Tool to extract parquet metadata.  Works on S3,local,HDFS, etc.
 
 [source,text]
 ----
-usage: parqu.py [-h] --path PATH [--pat PAT] [--recurse] [--pool POOL] [--details {0,1,2}] [--log {DEBUG,INFO,WARNING,ERROR,CRITICAL}]
+Description:
+    Extracts metadata from parquet file(s) in the given path
 
-Extract metadata from parquet files
+Usage:
+    
+    parque.py <path> [--inc=*.parquet] [--details=n] [--pool=8] [--log=DEBUG] [--recurse] [--help]
 
-optional arguments:
-  -h, --help            show this help message and exit
-  --path PATH           directory or file name
-  --pat PAT             unix style glob for filenames; applicable only if --path is a directory. Default to '*.parquet'
-  --recurse             recursivly list the directory path to find files
-  --pool POOL           number of concurrent workers for the run; defaults to number of 2 x CPUs - 1
-  --details {0,1,2}     0:file check; 1:basic schema dump [default], 2:exhaustive dump
-  --log {DEBUG,INFO,WARNING,ERROR,CRITICAL}
-                        log level; defaults to INFO
+Options:
+    -h --help      Show this screen
+    --inc=PATTERN  Find files matching the glob patterns [default: *.parquet]
+    --recurse      Recursively find files matching <glob> starting from <path>
+    --details=n    Print extra details 0,1,2 [default: 1]
+    --pool=<n>     Spin up n processes to process in parallel [default: 8]. 
+    --log=<lvl>    Log level: choices=("DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL") [default: ERROR]
+
 ----
